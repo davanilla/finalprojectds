@@ -84,6 +84,16 @@ def notify_due_tasks(tasks):
         if 0 <= (t.deadline - now).total_seconds() <= 3600:
             notify_task(t)
 
+def continuous_notifs(tasks):
+    print("I'm gonna remind you of relevant tasks every 5 minutes. Ctrl+C to abort.")
+    try:
+        while True:
+            notify_due_tasks(tasks)
+            time.sleep(300)
+    except KeyboardInterrupt:
+        print("Mission aborted.")
+
+
 if __name__ == "__main__":
     tasks = load_tasks()
     new_tasks = get_user_input()
@@ -91,4 +101,5 @@ if __name__ == "__main__":
     save_tasks(tasks)
     schedule_tasks(tasks)
     notify_due_tasks(tasks)
+    continuous_notifs(tasks)
     
