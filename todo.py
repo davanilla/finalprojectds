@@ -1,4 +1,6 @@
 from datetime import datetime
+from plyer import notification
+import time
 import heapq
 import json
 
@@ -69,10 +71,24 @@ def load_tasks(filename="todolist.json"):
         print("To-do list is void.")
     return tasks
 
+def notify_task(task):
+    notification.notify(
+        title=f"Reminder: {task.name}",
+        message=f"Deadline at {task.deadline.strftime('%H:%M')}, Priority: {task.priority}",
+        timeout = 30
+    )   
+    
+def notify_due_tasks(tasks):
+    now = datetime.now()
+    for t in tasks:
+        if 0 <= (t.deadline - now).total_seconds() <= 3600:
+            notify_task(t)
+
 if __name__ == "__main__":
     tasks = load_tasks()
     new_tasks = get_user_input()
     tasks.extend(new_tasks)
     save_tasks(tasks)
     schedule_tasks(tasks)
+    notify_due_tasks(tasks)
     
