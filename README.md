@@ -10,7 +10,6 @@ Diezgan vienkārša ideja - izveidot konsoles aplikāciju, kas ļautu sekot līd
 
 - `datetime`: Nodrošina darbu ar datumiem un laiku. Izmanto, lai salīdzinātu un pārbaudītu uzdevumu termiņus.
 - `time`: Izmantots, lai realizētu laika pauzi atgādinājumu cilpā (`sleep(300)`).
-- `heapq`: Ļauj sakārtot uzdevumus prioritārā rindā (min-heap), kur tiek ņemts vērā gan prioritātes līmenis, gan termiņš.
 - `json`: Nodrošina uzdevumu saraksta saglabāšanu un ielādi JSON formātā, kas ir viegli lasāms un pārnēsājams.
 - `plyer` (notification funkcija): Izmanto sistēmas paziņojumu parādīšanai lietotājam, kad kāds uzdevums tuvojas termiņam.
 
@@ -26,11 +25,22 @@ Projektā ir paša veidota datu struktūra - klase "Task", kas parstāv katru at
 
 Papildus tai ir definētas metodes:
 
-- `__lt__`: lai salīdzinātu uzdevumus pēc prioritātes un termiņa (`heapq` vajadzībām)
+- `__lt__`: lai salīdzinātu uzdevumus pēc prioritātes un termiņa (min heap vajadzībām)
 - `__eq__`: lai noteiktu, vai divi uzdevumi ir vienādi
 - `__repr__`: uzdevuma formatēta izdruka
 
-Uzdevumi tiek glabāti kā `list` saraksts, un prioritārā kārtošana tiek veikta ar `heapq` palīdzību (min-heap).
+Uzdevumi tiek glabāti kā `list` saraksts.
+
+Vēl projektā ir struktūra Min Heap, kas nodrošina prioritāro sakārtošanu.
+
+Klase satur:
+
+- **Datu glabāšana:** Uzdevumi tiek glabāti kā saraksts (`self.data`), kas apstrādāts kā min heap koks.
+- **Metodes:**
+  - `_heapify_up(idx)`: rūpējas, lai ievietotais elements paaugstinātos līdz pareizajai vietai, salīdzinot ar savu vecāku, lai saglabātu min heap īpašību.
+  - `_heapify_down(idx)`: pēc elementa izņemšanas no saknes veic pazemināšanu lejā pa koku, lai arī turpmāk min heap īpašība būtu spēkā.
+  - `push(task)`: pievieno jaunu uzdevumu un pēc tam sakārto heap.
+  - `pop()`: noņem minimālo uzdevumu (sakni) un atjauno heap struktūru.
 
 ---
 
@@ -42,7 +52,7 @@ Palaidžot programmu, lietotājam pavēras iespēja izvēlēties opciju no izvē
    Lietotājs ievada nosaukumu, termiņu un prioritāti. Programma pārbauda ievades pareizību un nepieļauj pagātnes datumus vai ārpus intervāla esošas prioritātes.
 
 2. **Uzdevumu saraksts**  
-   Tiek izvadīts uzdevumu saraksts sakārtots pēc prioritātes un termiņa, izmantojot `heapq`.
+   Tiek izvadīts uzdevumu saraksts sakārtots pēc prioritātes un termiņa, izmantojot min-heap datu strukturu.
 
 3. **Uzdevuma dzēšana**  
    Lietotājs var izvēlēties konkrētu uzdevumu pēc tā numura, lai to dzēstu.

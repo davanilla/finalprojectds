@@ -1,7 +1,6 @@
 from datetime import datetime
 from plyer import notification
 import time
-import heapq
 import json
 
 DATA_FILE = "todolist.json"
@@ -29,18 +28,59 @@ class Task:
             self.deadline == other.deadline and
             self.priority == other.priority
         )
+    
+class MinHeap:
+    def __init__(self):
+        self.data = []
+
+    def push(self, item):
+        self.data.append(item)
+        self._heapify_up(len(self.data) - 1)
+
+    def pop(self):
+        if not self.data:
+            return None
+        if len(self.data) == 1:
+            return self.data.pop()
+        root = self.data[0]
+        self.data[0] = self.data.pop()
+        self._heapify_down(0)
+        return root
+
+    def _heapify_up(self, idx):
+        parent = (idx - 1) // 2
+        if idx > 0 and self.data[idx] < self.data[parent]:
+            self.data[idx], self.data[parent] = self.data[parent], self.data[idx]
+            self._heapify_up(parent)
+
+    def _heapify_down(self, idx):
+        smallest = idx
+        left = 2 * idx + 1
+        right = 2 * idx + 2
+        if left < len(self.data) and self.data[left] < self.data[smallest]:
+            smallest = left
+        if right < len(self.data) and self.data[right] < self.data[smallest]:
+            smallest = right
+        if smallest != idx:
+            self.data[idx], self.data[smallest] = self.data[smallest], self.data[idx]
+            self._heapify_down(smallest)
+
+    def is_empty(self):
+        return len(self.data) == 0
+
 
 def schedule_tasks(tasks):
     if not tasks:
         print("There is void instead of a list!")
         return
-    task_heap = []
+    temp_heap = MinHeap()
     for task in tasks:
-        heapq.heappush(task_heap, task)
+        temp_heap.push(task)
 
     print("To-do list:")
-    while task_heap:
-        task = heapq.heappop(task_heap)
+    
+    while not temp_heap.is_empty():
+        task = temp_heap.pop()
         print(task)
 
 def get_user_input():
