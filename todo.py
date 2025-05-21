@@ -160,8 +160,11 @@ def run_todo():
         choice = show_menu()
         if choice == '1':
             task = get_user_input()
-            tasks.append(task)
-            save_tasks(tasks)
+            if task not in tasks:
+                tasks.append(task)
+                save_tasks(tasks)
+            else:
+                print("This task already exists!")
         elif choice == '2':
             schedule_tasks(tasks)
         
