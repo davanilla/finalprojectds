@@ -8,14 +8,14 @@ DATA_FILE = "todolist.json"
 DATE_FORMAT = "%Y.%m.%d %H:%M"
 
 class Task:
-    def __init__(self, name, deadline_str, priority, category="General"):
+    def __init__(self, name, deadline_str, priority):
         self.name = name
         self.deadline = datetime.strptime(deadline_str, DATE_FORMAT)
         self.priority = priority
-        self.category = category
 
     def __repr__(self):
-        return f"Task(name={self.name}, deadline={self.deadline}, priority={self.priority}, category={self.category})"
+        return f"{self.name} (Deadline: {self.deadline.strftime(DATE_FORMAT)}, Priority: {self.priority})"
+
 
     def __lt__(self, other):
         if self.priority == other.priority:
@@ -27,11 +27,13 @@ class Task:
             isinstance(other, Task) and
             self.name == other.name and
             self.deadline == other.deadline and
-            self.priority == other.priority and
-            self.category == other.category
+            self.priority == other.priority
         )
 
 def schedule_tasks(tasks):
+    if not tasks:
+        print("There is void instead of a list!")
+        return
     task_heap = []
     for task in tasks:
         heapq.heappush(task_heap, task)
@@ -42,40 +44,32 @@ def schedule_tasks(tasks):
         print(task)
 
 def get_user_input():
-    tasks = []
-    print("Enter your task (type 'done' when done): ")
+    name = input("Task name: ")
+    
+    while True: 
+        deadline_str = input("Deadline (YYYY.MM.DD HH:MM): ").strip()
+        try: 
+            deadline = datetime.strptime(deadline_str, DATE_FORMAT)
+            if deadline < datetime.now():
+                print("Deadline must be in the future, you lazy one^^")
+            else:
+                break
+        except ValueError:
+            print("Invalid date. Try again with your eyes open^^")
+
     while True:
-        name = input("Task: ")
-        if name.lower() == 'done':
-            break
-        while True: 
-            deadline_str = input("Deadline (YYYY.MM.DD HH:MM): ").strip()
-            try: 
-                deadline = datetime.strptime(deadline_str, DATE_FORMAT)
-                if deadline < datetime.now():
-                    print("Deadline must be in the future, you lazy one^^")
-                else:
-                    break
-            except ValueError:
-                print("Invalid date. Try again with your eyes open^^")
-        while True:
-            try:
-                priority = int(input("Priority (1 to 100): ").strip())
-                if (1 <= priority <= 100):
-                    break
-                else: 
-                    print("1 TO 100 PLEASE^^")
-            except ValueError:
-                print("Enter a NUMBER^^")
+        try:
+            priority = int(input("Priority (1 to 100): ").strip())
+            if 1 <= priority <= 100:
+                break
+            else: 
+                print("1 TO 100 PLEASE^^")
+        except ValueError:
+            print("Enter a NUMBER^^")
 
-        category = input("Category (default = 'General'): ")
-        if not category:
-            category = "General"
-
-        task = Task(name, deadline_str, priority, category)
-        tasks.append(task)
-        print(f"Added: {task}\n") 
-    return tasks
+    task = Task(name, deadline_str, priority)
+    print(f"Added: {task}\n") 
+    return task
 
 def save_tasks(tasks, filename=DATA_FILE):
     tasks_data = []
@@ -83,12 +77,11 @@ def save_tasks(tasks, filename=DATA_FILE):
         tasks_data.append({
             "name": task.name,
             "deadline": task.deadline.strftime(DATE_FORMAT),
-            "priority": task.priority,
-            "category": task.category
+            "priority": task.priority
         })
     with open(filename, "w") as f:
         json.dump(tasks_data, f, indent=2)
-    print(f"Tasks saved to {filename}")
+    print(f"Task(s) saved to {filename}")
 
 def load_tasks(filename="todolist.json"):
     tasks =[]
@@ -96,7 +89,7 @@ def load_tasks(filename="todolist.json"):
         with open(filename, "r") as f:
             tasks_data = json.load(f)
             for task in tasks_data:
-                tasks.append(Task(task["name"], task["deadline"], task["priority"], task["category"]))
+                tasks.append(Task(task["name"], task["deadline"], task["priority"]))
         print(f"Loaded {len(tasks)} tasks from {filename}")
     except FileNotFoundError:
         print("To-do list is void.")
@@ -128,14 +121,71 @@ def continuous_notifs(tasks):
     except KeyboardInterrupt:
         print("Mission aborted.")
 
+def remove_task(tasks):
+    if not tasks:
+        print("Void cannot be removed.")
+        return tasks
+
+    print("Tasks:")
+    for idx, task in enumerate(tasks, 1):
+        print(f"{idx}. {task.name} (Deadline: {task.deadline.strftime(DATE_FORMAT)}, Priority: {task.priority})")
+
+    try:
+        choice = int(input("Enter the task number to remove: "))
+        if 1 <= choice <= len(tasks):
+            removed = tasks.pop(choice - 1)
+            print(f"Removed task: {removed.name}")
+        else:
+            print("Wrong number^^")
+    except ValueError:
+        print("Tru again^^")
+    
+    return tasks
+
+
+def show_menu():
+    print("\nChoose an option:")
+    print("1. Add a task")
+    print("2. List tasks")
+    print("3. Remove task")
+    print("4. Start reminder loop")
+    print("5. Clear all tasks")
+    print("6. Exit")
+    choice = input("Enter your choice (1-6): ")
+    return choice.strip()
+
 def run_todo():
     tasks = load_tasks()
-    new_tasks = get_user_input()
-    tasks.extend(new_tasks)
-    save_tasks(tasks)
-    schedule_tasks(tasks)
-    notify_due_tasks(tasks)
-    continuous_notifs(tasks)
+    while True:
+        choice = show_menu()
+        if choice == '1':
+            task = get_user_input()
+            tasks.append(task)
+            save_tasks(tasks)
+        elif choice == '2':
+            schedule_tasks(tasks)
+        
+        elif choice == '3':
+            tasks = remove_task(tasks)
+        
+        elif choice == '4':
+            continuous_notifs(tasks)
+        
+        elif choice == '5':
+            confirm = input("Are you ready to face the void? (yes/no): ").lower()
+            if confirm == 'yes':
+                tasks.clear()
+                print("Embrace the void!")
+            else:
+                print("The void will await for your return.")
+
+        elif choice == '6':
+            save_tasks(tasks)
+            print("Goodbye!")
+            break
+        
+        else:
+            print("Select 1-5^^")
 
 if __name__ == "__main__":
     run_todo()
