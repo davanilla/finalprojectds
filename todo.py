@@ -123,7 +123,7 @@ def save_tasks(tasks, filename=DATA_FILE):
         json.dump(tasks_data, f, indent=2)
     print(f"Task(s) saved to {filename}")
 
-def load_tasks(filename="todolist.json"):
+def load_tasks(filename=DATA_FILE):
     tasks =[]
     try:
         with open(filename, "r") as f:
@@ -200,8 +200,11 @@ def run_todo():
         choice = show_menu()
         if choice == '1':
             task = get_user_input()
-            tasks.append(task)
-            save_tasks(tasks)
+            if task not in tasks:
+                tasks.append(task)
+                save_tasks(tasks)
+            else:
+                print("This task already exists!")
         elif choice == '2':
             schedule_tasks(tasks)
         
@@ -225,7 +228,7 @@ def run_todo():
             break
         
         else:
-            print("Select 1-5^^")
+            print("Select 1-6^^")
 
 if __name__ == "__main__":
     run_todo()
